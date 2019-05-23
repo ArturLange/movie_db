@@ -5,4 +5,5 @@ from . import views
 urlpatterns = [
     path('movies', views.ListMovies.as_view(), name='movies'),
     path('comments', views.Comments.as_view(), name='comments'),
+    path('top', views.Ranking.as_view(), name='top'),
 ]

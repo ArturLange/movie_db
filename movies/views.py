@@ -3,9 +3,10 @@ from rest_framework.response import Response
 from decimal import Decimal
 import requests
 from datetime import date
+from django.db.models import Count, Exists, Q
 
 from .models import Movie, Comment
-from .serializers import FetchMovieSerializer, MovieSerializer, CommentSerializer
+from .serializers import FetchMovieSerializer, MovieSerializer, CommentSerializer, MovieRankingSerializer
 
 
 class ListMovies(APIView):
@@ -63,4 +64,19 @@ class Comments(APIView):
         )
         comment.save()
         serializer = CommentSerializer(comment)
+        return Response(serializer.data)
+
+
+class Ranking(APIView):
+
+    def get(self, request, format=None):
+        start_date = '2015-05-05'  # request.data.get('start_date')
+        end_date = '2020-05-05'  # request.data.get('end_date')
+        comments_num = Count(
+            'comments',
+            filter=Q(comments__publication_time__gte=start_date)
+        )
+        movies = Movie.objects.all().annotate(total_comments=comments_num).order_by('total_comments')
+
+        serializer = MovieRankingSerializer(movies, many=True)
         return Response(serializer.data)

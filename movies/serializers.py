@@ -12,6 +12,11 @@ class MovieSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class MovieRankingSerializer(serializers.Serializer):
+    movie_id = serializers.IntegerField(source='id')
+    total_comments = serializers.IntegerField()
+
+
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
