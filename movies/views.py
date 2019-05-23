@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from decimal import Decimal
 import requests
-from datetime import datetime
+from datetime import date
 
 from .models import Movie, Comment
 from .serializers import FetchMovieSerializer, MovieSerializer, CommentSerializer
@@ -25,7 +25,7 @@ class ListMovies(APIView):
         if not movie:
             movie = Movie(
                 title=movie_data['Title'],
-                released_date=datetime.strptime(
+                released_date=date.strptime(
                     movie_data['Released'], '%d %b %Y'
                 ),
                 rated=movie_data['Rated'],
