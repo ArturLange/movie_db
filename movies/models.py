@@ -17,3 +17,12 @@ class Movie(models.Model):
     poster = models.URLField()
     imdb_id = models.CharField(max_length=32)
     imdb_rating = models.DecimalField(max_digits=2, decimal_places=1)
+
+
+class Comment(models.Model):
+    text = models.TextField()
+    movie = models.ForeignKey(
+        Movie,
+        on_delete=models.CASCADE, related_name='comments'
+    )
+    publication_time = models.DateTimeField(auto_now_add=True)

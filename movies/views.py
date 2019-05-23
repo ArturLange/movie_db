@@ -4,8 +4,8 @@ from decimal import Decimal
 import requests
 from datetime import datetime
 
-from .models import Movie
-from .serializers import FetchMovieSerializer, MovieSerializer
+from .models import Movie, Comment
+from .serializers import FetchMovieSerializer, MovieSerializer, CommentSerializer
 
 
 class ListMovies(APIView):
@@ -47,3 +47,20 @@ class ListMovies(APIView):
         movie_serializer = MovieSerializer(movie)
 
         return Response(movie_serializer.data)
+
+
+class Comments(APIView):
+
+    def get(self, request, format=None):
+        comments = Comment.objects.all()
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        comment = Comment(
+            text=request.data['text'],
+            movie_id=request.data['movie']
+        )
+        comment.save()
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data)
