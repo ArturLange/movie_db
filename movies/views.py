@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from decimal import Decimal
 import requests
-from datetime import date
+from datetime import datetime
 from django.db.models import Count, Exists, Q
 
 from .models import Movie, Comment
@@ -26,9 +26,9 @@ class ListMovies(APIView):
         if not movie:
             movie = Movie(
                 title=movie_data['Title'],
-                released_date=date.strptime(
+                released_date=datetime.strptime(
                     movie_data['Released'], '%d %b %Y'
-                ),
+                ).date(),
                 rated=movie_data['Rated'],
                 runtime=int(movie_data['Runtime'][:-4]),
                 genre=movie_data['Genre'],
