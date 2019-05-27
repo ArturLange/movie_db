@@ -1,5 +1,23 @@
 # Movie DB
 
+## Setup
+
+1. (optional) create a virtualenv using e.g.
+
+   `virtualenv venv --python=python3`
+
+2. Install dependencies
+
+   `pip install -r requirements.txt`
+
+3. Run migrations
+
+   `./manage.py migrate`
+
+4. Run the application
+
+   `./manage.py runserver`
+
 ## Endpoints
 
 - `/movies`
