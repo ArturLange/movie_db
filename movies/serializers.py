@@ -19,6 +19,7 @@ class MovieRankingSerializer(serializers.Serializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    movie_id = serializers.IntegerField()
     class Meta:
         model = Comment
-        exclude = ('publication_time',)
+        exclude = ('publication_time', 'movie')

@@ -60,7 +60,7 @@ class Comments(APIView):
     def post(self, request, format=None):
         comment = Comment(
             text=request.data['text'],
-            movie_id=request.data['movie']
+            movie_id=request.data['movie_id']
         )
         comment.save()
         serializer = CommentSerializer(comment)
