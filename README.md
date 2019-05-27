@@ -34,7 +34,7 @@
       }
     ];
     ```
-    
+
     Also allows filtering by passing the `movie_id` query parameter.
 
   - `POST` - allows adding a comment to the movie.
@@ -53,6 +53,8 @@
 
 ## Limitations
 
-At the moment the application uses OMDB - an open movie database which allows only 1000 requests per day.
+- At the moment the application uses OMDB - an open movie database which allows only 1000 requests per day.
 
-Also pagination is not implemented, app may become slow if a lot of movies get written.
+- Pagination is not implemented, app may become slow if a lot of movies get written.
+
+- App expects OMDB API to be up and running and fails miserably if it's offline.
