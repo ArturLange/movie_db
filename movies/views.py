@@ -53,7 +53,10 @@ class ListMovies(APIView):
 class Comments(APIView):
 
     def get(self, request, format=None):
+        movie_id = request.query_params.get('movie_id')
         comments = Comment.objects.all()
+        if movie_id:
+            comments = comments.filter(movie_id=movie_id)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
 

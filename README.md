@@ -34,6 +34,8 @@
       }
     ];
     ```
+    
+    Also allows filtering by passing the `movie_id` query parameter.
 
   - `POST` - allows adding a comment to the movie.
     Example request:
