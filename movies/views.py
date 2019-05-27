@@ -81,7 +81,7 @@ class Ranking(APIView):
             'comments',
             filter=Q(comments__publication_time__gte=start_date)
         )
-        movies = Movie.objects.all().annotate(total_comments=comments_num).order_by('total_comments')
+        movies = Movie.objects.all().annotate(total_comments=comments_num).order_by('-total_comments')
         ranks = [movie.total_comments for movie in movies]
         for movie in movies:
             movie.rank = ranks.index(movie.total_comments) + 1
