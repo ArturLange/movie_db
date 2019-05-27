@@ -1,7 +1,8 @@
 from django.test import TestCase, Client
 from unittest.mock import Mock, patch
-from .models import Movie
+from .models import Movie, Comment
 import json
+from datetime import datetime, timedelta, timezone
 
 
 movie_object = json.loads(
@@ -13,6 +14,21 @@ def load_movies():
         movies_json = json.load(json_file)
     for movie in movies_json:
         Movie(**movie).save()
+
+
+def load_comments():
+    comments = [
+        {"text": "comment1", "movie_id": 3, "publication_time": datetime.now(timezone.utc)},
+        {"text": "comment2", "movie_id": 2,
+            "publication_time": datetime.now(timezone.utc) - timedelta(days=20)},
+        {"text": "comment3", "movie_id": 3,
+            "publication_time": datetime.now(timezone.utc) + timedelta(days=20)},
+    ]
+    for comment in comments:
+        new_comment = Comment(**comment)
+        new_comment.save()
+        new_comment.publication_time = comment['publication_time']
+        new_comment.save()
 
 
 def mocked_requests_get(*args, **kwargs):
@@ -27,7 +43,7 @@ def mocked_requests_get(*args, **kwargs):
     return MockResponse(movie_object, 200)
 
 
-class TestMovieCreationViews(TestCase):
+class TestMovieViews(TestCase):
 
     @patch('movies.views.requests.get', side_effect=mocked_requests_get)
     def test_movie_is_created(self, get_mock):
@@ -63,3 +79,125 @@ class TestMovieCreationViews(TestCase):
         c = Client()
         response = c.get('/movies')
         self.assertEqual(Movie.objects.all().count(), 5)
+
+
+class TestCommentViews(TestCase):
+
+    def test_add_comment(self):
+        load_movies()
+        c = Client()
+        self.assertEqual(Comment.objects.all().count(), 0)
+
+        response = c.post('/comments', {"text": "Comment 1", "movie_id": 1})
+        self.assertEqual(Comment.objects.all().count(), 1)
+
+    def test_get_all_comments(self):
+        load_movies()
+        load_comments()
+        c = Client()
+        response = c.get('/comments')
+        expected = [
+            {"text": "comment1", "movie_id": 3, "id": 1},
+            {"text": "comment2", "movie_id": 2, "id": 2},
+            {"text": "comment3", "movie_id": 3, "id": 3},
+        ]
+        self.assertEqual(response.json(), expected)
+
+    def test_get_filtered_comments(self):
+        load_movies()
+        load_comments()
+        c = Client()
+        response = c.get('/comments', {"movie_id": 3})
+        expected = [
+            {"text": "comment1", "movie_id": 3, "id": 1},
+            {"text": "comment3", "movie_id": 3, "id": 3},
+        ]
+        self.assertEqual(response.json(), expected)
+
+
+class TestRankingView(TestCase):
+
+    def setUp(self):
+        load_movies()
+        load_comments()
+
+    def test_get_ranking_all(self):
+        start_date = datetime.now(timezone.utc) - timedelta(days=30)
+        end_date = datetime.now(timezone.utc) + timedelta(days=30)
+        c = Client()
+        response = c.get(
+            '/top', {"start_date": start_date, "end_date": end_date})
+
+        expected = [
+            {
+                "movie_id": 3,
+                "total_comments": 2,
+                "rank": 1
+            },
+            {
+                "movie_id": 2,
+                "total_comments": 1,
+                "rank": 2
+            },
+            {
+                "movie_id": 1,
+                "total_comments": 0,
+                "rank": 3
+            },
+            {
+                "movie_id": 4,
+                "total_comments": 0,
+                "rank": 3
+            },
+            {
+                "movie_id": 5,
+                "total_comments": 0,
+                "rank": 3
+            }
+        ]
+        # Ordering is deterministic, if two movies have he same rank, they will be ordered by id
+        self.assertListEqual(
+            response.json(),
+            expected
+        )
+
+    def test_get_ranking_filtered(self):
+        start_date = datetime.now(timezone.utc) - timedelta(days=30)
+        end_date = datetime.now(timezone.utc) + timedelta(days=5)
+        c = Client()
+        response = c.get(
+            '/top', {"start_date": start_date, "end_date": end_date})
+
+
+        expected = [
+            {
+                "movie_id": 2,
+                "total_comments": 1,
+                "rank": 1
+            },
+            {
+                "movie_id": 3,
+                "total_comments": 1,
+                "rank": 1
+            },
+            {
+                "movie_id": 1,
+                "total_comments": 0,
+                "rank": 3
+            },
+            {
+                "movie_id": 4,
+                "total_comments": 0,
+                "rank": 3
+            },
+            {
+                "movie_id": 5,
+                "total_comments": 0,
+                "rank": 3
+            }
+        ]
+        # Ordering is deterministic, if two movies have he same rank, they will be ordered by id
+        self.assertListEqual(
+            response.json(),
+            expected
+        )

@@ -83,13 +83,14 @@ class Ranking(APIView):
             return Response({'error': 'Needs "start_date" and "end_date" parameters'}, status=400)
         comments_num = Count(
             'comments',
-            filter=Q(comments__publication_time__gte=start_date)
+            filter=Q(comments__publication_time__gte=start_date) & Q(
+                comments__publication_time__lte=end_date)
         )
-        movies = Movie.objects.all().annotate(total_comments=comments_num).order_by('-total_comments')
+        movies = Movie.objects.all().annotate(
+            total_comments=comments_num).order_by('-total_comments', 'id')
         ranks = [movie.total_comments for movie in movies]
         for movie in movies:
             movie.rank = ranks.index(movie.total_comments) + 1
-
 
         serializer = MovieRankingSerializer(movies, many=True)
         return Response(serializer.data)
